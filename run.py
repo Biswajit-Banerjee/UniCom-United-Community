@@ -177,7 +177,7 @@ def get_date():
             'https://api.rootnet.in/covid19-in/unofficial/covid19india.org'
     )
     # extract date
-    date = df['lastRefreshed'].lastRefreshed.replace("T", " ").replace("Z", "")
+    date = raw_cov_data['lastRefreshed'].lastRefreshed.replace("T", " ").replace("Z", "")
     date = date[:date.rfind(".")]
 
     # parse the date

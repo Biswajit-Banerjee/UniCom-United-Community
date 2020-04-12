@@ -166,7 +166,7 @@ def get_data_from_db():
     return jsonify({"result": all_data})  
 
 
-@app.route("/", methods=['GET'])  
+@app.route("/")  
 def read_and_update_data():
     
     # create seperate process to update the db

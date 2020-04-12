@@ -173,7 +173,7 @@ def get_data_from_db():
 @app.route("/last_updated")
 def get_date():
     # get indian time zone
-    ist = pytz.timezone('Asia/Kolkata')
+    ist = pytz.timezone('Asia/Kabul')
     actual_date = ist.localize(dt.now())
 
     return jsonify({"date": actual_date})

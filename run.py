@@ -112,7 +112,7 @@ def update_state_data():
     """
     update the data in the db with latest update
     """
-    cov_data = get_curresnt_cov_state_data()
+    cov_data = get_current_cov_state_data()
     
     # fetch db URI from preset env var
     db_key = os.environ["DB_KEY"]
@@ -196,3 +196,26 @@ def read_and_update_data():
     # return results of the read operation
     return get_data_from_db()
 
+
+@app.route("/state/<state_name>")
+def get_state_data(state_name):
+    # fetch db URI from preset env var
+    db_key = os.environ["DB_KEY"]
+
+    # add all the data to mongo db
+    # create client
+    client = MongoClient(db_key)
+    
+    # open the db
+    db = client.test
+    
+    # create new collection for state data
+    collection = db.StateData
+
+    # fetch regex matched state name
+    document = collection.find_one({"state": {$regex : f".*{state_name}.*"}})
+
+    # convert that data to  a dict removing the id
+    data = {key: value for key, value in document.items() if key != '_id'}
+
+    return jsonify({"result": data})

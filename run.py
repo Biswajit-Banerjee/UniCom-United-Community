@@ -6,7 +6,7 @@ from flask import Flask
 from flask import jsonify
 import multiprocessing as mp 
 import os
-
+import pytz
 
 app = Flask(__name__)
 
@@ -20,7 +20,7 @@ def replace_empty(x):
     else:
         return x
 
-def get_curresnt_cov_state_data():
+def get_current_cov_state_data():
     """
     extract the current state wise COVID data 
     """
@@ -140,8 +140,6 @@ def update_state_data():
         # modify state name if emepty
         state = state if state != "" else "Unknow"
         record["state"] = state 
-        record["last_updated"] = dt.now()
-        
         
         # replace the old data with the new one
         collection.replace_one(collection.find_one({"state": state}), record)
@@ -172,6 +170,22 @@ def get_data_from_db():
     return jsonify({"result": all_data})  
 
 
+@app.route("/last_updated")
+def get_date():
+    # read data from website
+    raw_cov_data = pd.read_json(
+            'https://api.rootnet.in/covid19-in/unofficial/covid19india.org'
+    )
+    # extract date
+    date = df['lastRefreshed'].lastRefreshed.replace("T", " ").replace("Z", "")
+    date = date[:date.rfind(".")]
+
+    # parse the date
+    actual_date = dt.strptime(date, '%Y-%m-%d %H:%M:%S')
+    
+    return jsonify({"date": actual_date})
+
+
 @app.route("/")  
 def read_and_update_data():
     
@@ -181,3 +195,4 @@ def read_and_update_data():
 
     # return results of the read operation
     return get_data_from_db()
+

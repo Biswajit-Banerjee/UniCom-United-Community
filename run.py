@@ -183,10 +183,6 @@ def get_date():
     # parse the date
     actual_date = dt.strptime(date, '%Y-%m-%d %H:%M:%S')
     
-    # get indian time zone
-    ist = pytz.timezone('Asia/Kolkata')
-    actual_date = ist.localize(actual_date).dst()
-
     return jsonify({"date": actual_date})
 
 

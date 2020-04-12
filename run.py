@@ -6,8 +6,11 @@ from flask import Flask
 from flask import jsonify
 import multiprocessing as mp 
 import os
-import pytz
+from scipy.cluster.hierarchy import linkage, fcluster
+from scipy.cluster.vq import whiten
 
+
+# create flask app
 app = Flask(__name__)
 
 
@@ -19,6 +22,7 @@ def replace_empty(x):
         return 'Unknown'
     else:
         return x
+
 
 def get_current_cov_state_data():
     """
@@ -219,3 +223,92 @@ def get_state_data(state_name):
     data = {key: value for key, value in document.items() if key != '_id'}
 
     return jsonify({"result": data})
+
+
+
+def get_cov_data_with_pop():
+    
+    cov_data = get_current_cov_state_data().reset_index()
+
+    cov_data = cov_data.loc[
+            :, 
+            [
+                    "state",
+                    "Active",
+                    "Deceased",
+                    "Migrated",
+                    "Recovered",
+                    "Total"
+
+            ]
+    ]
+
+    # Get population data
+    df_pop = pd.read_csv(
+                            'https://raw.githubusercontent.com/nishusharma1608/'
+                            + 'India-Census-2011-Analysis/master/india-districts'
+                            + '-census-2011.csv').loc[
+                                                        :, 
+                                                        [
+                                                        'State name', 
+                                                        'Population'
+                                                        ]
+                                                    ]
+    
+    df_pop.loc[:, 'State name'] = df_pop.loc[:, 'State name'].str.title()
+    df_pop.loc[:, 'State name'] = df_pop.loc[:, 'State name'].str.replace("Pondicherry", "Puducherry")
+
+    state_wise_pop = df_pop.groupby(['State name']).sum()
+
+    cov_data.loc[:, 'state'] = cov_data.loc[:, 'state'].str.title()
+
+    cov_with_pop = pd.merge(
+                                cov_data, 
+                                state_wise_pop, 
+                                left_on=['state'], 
+                                right_on=['State name'], 
+                                how='left')
+
+    cov_with_pop.set_index('state', inplace=True)
+    # custom setting some missing data
+    cov_with_pop.loc['Delhi', 'Population'] = 16787941
+    cov_with_pop.loc['Ladakh', 'Population'] = 133487
+    cov_with_pop.loc['Odisha', 'Population'] = 41974218
+    cov_with_pop.loc['Telangana', 'Population'] = 35193978
+
+    cov_with_pop.loc[:, 'Infected potion'] = (cov_with_pop.loc[:, 'Total'] / cov_with_pop.loc[:, 'Population']) * 100
+
+    return cov_with_pop
+
+
+@app.route("/ML/spread_prob")
+def get_spreading_probability():
+
+    cov_data = get_cov_data_with_pop().reset_index().dropna()
+
+    X = whiten(cov_data.drop(["state"], 1))
+
+    Z = linkage(X, 'ward', 'euclidean')
+
+    cov_data['class'] = fcluster(Z, 6, criterion='maxclust') 
+
+    cov_data["spread_prob"] = (1 - cov_data['class'] / 7) * 100
+
+    cov_data["spread_prob"] = cov_data["spread_prob"].round(2)
+
+    cov_data.set_index("state", inplace=True)
+
+    cov_data.sort_values(["spread_prob"], inplace=True)
+
+    all_records = []
+
+    # add each of the states
+    for state in tqdm(cov_data.index):
+        record = {"state": state}
+        record["Alert Level"] = cov_data.loc[state, "class"].astype('float')
+        record["Infected portion"] = cov_data.loc[state, "Infected potion"].round(6)
+        record["Spreading Probability"] =  cov_data.loc[state, "spread_prob"]
+
+        all_records.append(record)
+    return jsonify({'result': all_records})
+

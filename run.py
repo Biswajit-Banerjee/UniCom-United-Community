@@ -76,11 +76,12 @@ def add_cov_state_data_to_db():
     """
     cov_data = get_curresnt_cov_state_data()
     
+    # fetch db URI from preset env var
+    db_key = os.environ["DB_KEY"]
+
     # add all the data to mongo db
     # create client
-    client = MongoClient(
-            'mongodb+srv://dbuser:admindbuser890@unity-community-bcw3m.mongodb.net/test?retryWrites=true&w=majority'
-    )
+    client = MongoClient(db_key)
     
     # open the db
     db = client.test
@@ -112,11 +113,13 @@ def update_state_data():
     """
     cov_data = get_curresnt_cov_state_data()
     
+    # fetch db URI from preset env var
+    db_key = os.environ["DB_KEY"]
+
+    # add all the data to mongo db
     # create client
-    client = MongoClient(
-            'mongodb+srv://dbuser:admindbuser890@unity-community-bcw3m' 
-            + '.mongodb.net/test?retryWrites=true&w=majority'
-    )
+    client = MongoClient(db_key)
+    
     
     # open the db
     db = client.test
@@ -144,11 +147,13 @@ def update_state_data():
         
 
 def get_data_from_db():
+    # fetch db URI from preset env var
+    db_key = os.environ["DB_KEY"]
+
+    # add all the data to mongo db
     # create client
-    client = MongoClient(
-            'mongodb+srv://dbuser:admindbuser890@unity-community-bcw3m' 
-            + '.mongodb.net/test?retryWrites=true&w=majority'
-    )
+    client = MongoClient(db_key)
+    
     # open the db
     db = client.test
     
@@ -170,9 +175,8 @@ def get_data_from_db():
 def read_and_update_data():
     
     # create seperate process to update the db
-    # update_proc = mp.Process(target=update_state_data)
-    # update_proc.start()
+    update_proc = mp.Process(target=update_state_data)
+    update_proc.start()
 
     # return results of the read operation
-    # return get_data_from_db()
-    return "Hello World!"
+    return get_data_from_db()

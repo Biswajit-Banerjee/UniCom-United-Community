@@ -172,21 +172,10 @@ def get_data_from_db():
 
 @app.route("/last_updated")
 def get_date():
-    # read data from website
-    raw_cov_data = pd.read_json(
-            'https://api.rootnet.in/covid19-in/unofficial/covid19india.org'
-    )
-    # extract date
-    date = raw_cov_data['lastRefreshed'].lastRefreshed.replace("T", " ").replace("Z", "")
-    date = date[:date.rfind(".")]
-
-    # parse the date
-    actual_date = dt.strptime(date, '%Y-%m-%d %H:%M:%S')
-    
     # get indian time zone
     ist = pytz.timezone('Asia/Kolkata')
-    actual_date = ist.localize(actual_date)
-    
+    actual_date = ist.localize(dt.now())
+
     return jsonify({"date": actual_date})
 
 

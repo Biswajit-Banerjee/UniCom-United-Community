@@ -213,7 +213,7 @@ def get_state_data(state_name):
     collection = db.StateData
 
     # fetch regex matched state name
-    document = collection.find_one({"state": {$regex : f".*{state_name}.*"}})
+    document = collection.findOne({"state": {"$regex" : f".*{state_name}.*"}})
 
     # convert that data to  a dict removing the id
     data = {key: value for key, value in document.items() if key != '_id'}

@@ -79,8 +79,7 @@ def add_cov_state_data_to_db():
     # add all the data to mongo db
     # create client
     client = MongoClient(
-            'mongodb+srv://dbuser:admindbuser890@unity-community-bcw3m' 
-            + '.mongodb.net/test?retryWrites=true&w=majority'
+            'mongodb+srv://dbuser:admindbuser890@unity-community-bcw3m.mongodb.net/test?retryWrites=true&w=majority'
     )
     
     # open the db
@@ -171,13 +170,9 @@ def get_data_from_db():
 def read_and_update_data():
     
     # create seperate process to update the db
-    update_proc = mp.Process(target=update_state_data)
-    update_proc.start()
+    # update_proc = mp.Process(target=update_state_data)
+    # update_proc.start()
 
     # return results of the read operation
-    return get_data_from_db()
-
-
-
-app.run()
-    
+    # return get_data_from_db()
+    return "Hello World!"

@@ -178,6 +178,6 @@ def read_and_update_data():
     return get_data_from_db()
 
 
-if __name__ == '__main__':
+
+app.run()
     
-    app.run()

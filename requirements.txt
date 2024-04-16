@@ -13,7 +13,7 @@ joblib==0.14.1
 MarkupSafe==1.1.1
 MouseInfo==0.1.2
 pandas==1.0.3
-pymongo==3.10.1
+pymongo==4.6.3
 pyperclip==1.7.0
 PyRect==0.1.4
 PyScreeze==0.1.26
